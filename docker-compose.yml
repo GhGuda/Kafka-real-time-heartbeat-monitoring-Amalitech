@@ -1,0 +1,105 @@
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    depends_on:
+      - kafka
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+
+
+
+  kafka-init:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on:
+      - kafka
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      "
+      echo 'Waiting for Kafka to be ready...';
+
+      while ! kafka-topics --bootstrap-server kafka:9092 --list > /dev/null 2>&1; do
+        sleep 2;
+      done;
+
+      echo 'Kafka is ready. Creating topic...';
+
+      kafka-topics --create \
+        --if-not-exists \
+        --topic heartbeat-topic \
+        --bootstrap-server kafka:9092 \
+        --partitions 1 \
+        --replication-factor 1;
+
+      echo 'Topic created successfully.';
+      "
+  
+  producer:
+    build: .
+    depends_on:
+      - kafka
+    environment:
+      - KAFKA_BROKER=kafka:9092
+    command: ["python", "-m", "app.producer.producer"]
+
+
+
+  postgres:
+    image: postgres:15
+    container_name: kafka-postgres
+    environment:
+      POSTGRES_USER: heartbeat_user
+      POSTGRES_PASSWORD: heartbeat_pass
+      POSTGRES_DB: heartbeat_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: kafka-pgadmin
+    depends_on:
+      - postgres
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+
+  
+  consumer:
+    build: .
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      - KAFKA_BROKER=kafka:9092
+      - POSTGRES_HOST=postgres
+    command: ["python", "-m", "app.consumer.consumer"]
+
+  
+volumes:
+  postgres_data:
