@@ -2,3 +2,4 @@ kafka-python==2.0.2
 python-dotenv==1.0.1
 psycopg[binary]==3.3.3
 
+prometheus-client==0.20.0

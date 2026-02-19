@@ -60,6 +60,14 @@ services:
         --replication-factor 1;
 
       echo 'Topic created successfully.';
+      
+      kafka-topics --create \
+        --if-not-exists \
+        --topic heartbeat-dead-letter \
+        --bootstrap-server kafka:9092 \
+        --partitions 1 \
+        --replication-factor 1;
+      echo 'Dead letter topic created successfully.';
       "
   
   producer:
@@ -114,12 +122,31 @@ services:
       - KAFKA_BROKER=kafka:9092
       - POSTGRES_HOST=postgres
     command: ["python", "-m", "app.consumer.consumer"]
-
+    ports:
+      - "8000:8000"
   
 
   generator:
     build: .
     command: ["python", "-m", "app.generator.generator"]
+
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    depends_on:
+      - consumer
+
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
 
   
 volumes:
