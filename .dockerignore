@@ -1,11 +1,21 @@
-.venv
-__pycache__
+# Python
+.venv/
+__pycache__/
 *.pyc
 *.pyo
 *.pyd
-.git
-.gitignore
+
+# Environment
 .env
-.vscode
-node_modules
-monitoring/__pycache__
+
+# VS Code
+.vscode/
+
+# Node
+node_modules/
+
+# Monitoring cache
+monitoring/__pycache__/
+
+# Git (already ignored automatically but fine)
+.git

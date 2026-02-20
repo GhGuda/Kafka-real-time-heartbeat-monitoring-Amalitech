@@ -1,0 +1,18 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment
+.env
+
+# VS Code
+.vscode/
+
+# Node
+node_modules/
+
+# Monitoring cache
+monitoring/__pycache__/

@@ -1,6 +1,4 @@
 """
-consumer.py
-
 Kafka consumer that validates heartbeat events
 and writes them to PostgreSQL.
 """
@@ -11,7 +9,6 @@ import time
 import signal
 import logging
 import threading
-from typing import Dict
 
 from kafka import KafkaConsumer, KafkaProducer
 from kafka.errors import NoBrokersAvailable
@@ -22,6 +19,8 @@ import psycopg
 from dotenv import load_dotenv
 from app.config.logging_config import setup_logging
 from app.config.helper import shutdown_handler
+
+from app.core.validation import validate_event
 
 
 # ---------------------------
@@ -145,26 +144,6 @@ def create_db_connection():
             time.sleep(5)
 
 
-# ---------------------------
-# Validation
-# ---------------------------
-
-def validate_event(event: Dict) -> bool:
-    """
-    Validate heartbeat event payload.
-    """
-    try:
-        if not all(k in event for k in ("customer_id", "timestamp", "heart_rate")):
-            return False
-
-        heart_rate = int(event["heart_rate"])
-        if not (30 <= heart_rate <= 220):
-            return False
-
-        return True
-
-    except Exception:
-        return False
 
 
 # ---------------------------
@@ -186,7 +165,8 @@ def insert_batch(cursor, events):
         for e in events
     ]
 
-    cursor.executemany(query, values)
+    cursor.copy(query, values)
+    
  
 
 
@@ -247,6 +227,8 @@ def run_consumer():
     total_invalid = 0
     total_inserted = 0
     last_metrics_log = time.time()
+    BATCH_TIMEOUT = 2  # seconds
+    last_flush_time = time.time()
 
     dlq_producer = create_dlq_producer()
     consumer = create_consumer()
@@ -281,8 +263,8 @@ def run_consumer():
                     total_invalid += 1
                     MESSAGES_INVALID.inc()
 
-        # Batch insert when threshold reached
-        if len(batch) >= BATCH_SIZE:
+        # Hybrid insert strategy: batch insert if batch size or timeout reached
+        if len(batch) >= BATCH_SIZE or (time.time() - last_flush_time >= BATCH_TIMEOUT and batch):
             try:
                 start_batch_time = time.time()
 
