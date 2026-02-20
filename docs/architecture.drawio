@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net">
+  <diagram name="Real-Time Customer Heartbeat Architecture">
+    <mxGraphModel dx="1420" dy="827" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" background="#ffffff">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Docker Boundary -->
+        <mxCell id="docker" value="Docker Network&#xa;Containerized Microservices Architecture" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="1500" height="850" as="geometry"/>
+        </mxCell>
+
+        <!-- Generator -->
+        <mxCell id="gen" value="Synthetic Data Generator&#xa;- Simulates heart rate events&#xa;- JSON payloads&#xa;- Configurable interval" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="docker">
+          <mxGeometry x="120" y="120" width="250" height="120" as="geometry"/>
+        </mxCell>
+
+        <!-- Producer -->
+        <mxCell id="prod" value="Kafka Producer&#xa;- Publishes events&#xa;- Retries enabled&#xa;- acks=all" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="docker">
+          <mxGeometry x="420" y="120" width="250" height="120" as="geometry"/>
+        </mxCell>
+
+        <!-- Kafka -->
+        <mxCell id="kafka" value="Apache Kafka&#xa;- heartbeat-topic&#xa;- Dead Letter Topic&#xa;- Offset management" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="docker">
+          <mxGeometry x="760" y="100" width="260" height="160" as="geometry"/>
+        </mxCell>
+
+        <!-- DLQ -->
+        <mxCell id="dlq" value="Dead Letter Topic&#xa;- Invalid events" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="docker">
+          <mxGeometry x="760" y="300" width="260" height="100" as="geometry"/>
+        </mxCell>
+
+        <!-- Consumer -->
+        <mxCell id="consumer" value="Kafka Consumer&#xa;- Polls Kafka&#xa;- Validation&#xa;- Batch Processing&#xa;- Manual Offset Commit&#xa;- Prometheus Metrics" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="docker">
+          <mxGeometry x="420" y="350" width="300" height="180" as="geometry"/>
+        </mxCell>
+
+        <!-- PostgreSQL -->
+        <mxCell id="db" value="PostgreSQL&#xa;- customer_heartbeats table&#xa;- Indexed on timestamp&#xa;- CHECK constraint (30-220 bpm)&#xa;- Batch Inserts" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="docker">
+          <mxGeometry x="120" y="400" width="260" height="160" as="geometry"/>
+        </mxCell>
+
+        <!-- Metrics Endpoint -->
+        <mxCell id="metrics" value="/metrics (Port 8000)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="docker">
+          <mxGeometry x="800" y="520" width="220" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- Prometheus -->
+        <mxCell id="prom" value="Prometheus&#xa;- Scrapes metrics&#xa;- Stores time-series&#xa;- Tracks throughput &amp; lag" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="docker">
+          <mxGeometry x="1080" y="520" width="260" height="120" as="geometry"/>
+        </mxCell>
+
+        <!-- Grafana -->
+        <mxCell id="graf" value="Grafana Dashboard&#xa;- Messages/sec&#xa;- Insert rate&#xa;- Consumer lag" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="docker">
+          <mxGeometry x="1080" y="680" width="260" height="120" as="geometry"/>
+        </mxCell>
+
+        <!-- Connections -->
+        <mxCell edge="1" parent="docker" source="gen" target="prod" style="endArrow=block;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell edge="1" parent="docker" source="prod" target="kafka" style="endArrow=block;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell edge="1" parent="docker" source="kafka" target="consumer" style="endArrow=block;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell edge="1" parent="docker" source="consumer" target="db" style="endArrow=block;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell edge="1" parent="docker" source="consumer" target="dlq" style="endArrow=block;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell edge="1" parent="docker" source="consumer" target="metrics" style="endArrow=block;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell edge="1" parent="docker" source="metrics" target="prom" style="endArrow=block;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell edge="1" parent="docker" source="prom" target="graf" style="endArrow=block;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
