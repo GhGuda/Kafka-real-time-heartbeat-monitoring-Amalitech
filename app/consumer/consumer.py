@@ -79,7 +79,8 @@ MESSAGES_INSERTED = Counter(
 
 CONSUMER_LAG = Gauge(
     "heartbeat_consumer_lag",
-    "Current Kafka consumer lag"
+    "Kafka consumer lag per partition",
+    ["partition"]
 )
 
 
@@ -296,8 +297,8 @@ def run_consumer():
             rate = total_received / elapsed if elapsed > 0 else 0
 
             lag_info = calculate_consumer_lag(consumer)
-            total_lag = sum(lag["lag"] for lag in lag_info)
-            CONSUMER_LAG.set(total_lag)
+            for lag in lag_info:
+                CONSUMER_LAG.labels(partition=str(lag["partition"])).set(lag["lag"])
 
             logger.info(
                 f"[METRICS] "

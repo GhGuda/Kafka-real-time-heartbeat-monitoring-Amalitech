@@ -1,6 +1,6 @@
 # Real-Time Customer Heartbeat Monitoring System Set Up Guide
 
-### 🔧 Prerequisites
+### Prerequisites
 
 Ensure the following are installed:
 
@@ -15,7 +15,7 @@ Ensure the following are installed:
 
 ### Clone Repository
 ``` bash
-    git clone <your-repo-url>
+    git clone https://github.com/GhGuda Kafka-real-time-heartbeat-monitoring-Amalitech
     cd Kafka-Real-Time-Heartbeat-Monitoring
 ```
 
@@ -45,7 +45,7 @@ This will start:
 
 Kafka UI (if configured)
 ```bash
-    http://localhost:<port>
+    http://localhost:8080
 ```
 
 Prometheus

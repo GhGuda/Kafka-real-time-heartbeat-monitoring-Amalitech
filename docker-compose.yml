@@ -145,9 +145,13 @@ services:
     image: grafana/grafana:latest
     ports:
       - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/monitoring
+      - ./monitoring/provisioning:/etc/monitoring/provisioning
     depends_on:
       - prometheus
 
   
 volumes:
   postgres_data:
+  grafana-storage:
