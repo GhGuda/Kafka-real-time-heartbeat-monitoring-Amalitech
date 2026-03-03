@@ -152,8 +152,8 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - grafana-storage:/var/lib/monitoring
-      - ./monitoring/provisioning:/etc/monitoring/provisioning
+      - grafana-storage:/var/lib/grafana
+      - ./monitoring/provisioning:/etc/grafana/provisioning
     depends_on:
       - prometheus
 
