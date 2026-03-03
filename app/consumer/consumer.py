@@ -166,7 +166,7 @@ def insert_batch(cursor, events):
         for e in events
     ]
 
-    cursor.copy(query, values)
+    cursor.executemany(query, values)
     
  
 
