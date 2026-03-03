@@ -94,7 +94,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U heartbeat_user"]
+      test: ["CMD-SHELL", "pg_isready -U heartbeat_user -d heartbeat_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -121,6 +121,10 @@ services:
     environment:
       - KAFKA_BROKER=kafka:9092
       - POSTGRES_HOST=postgres
+      - POSTGRES_DB=heartbeat_db
+      - POSTGRES_USER=heartbeat_user
+      - POSTGRES_PASSWORD=heartbeat_pass
+      - POSTGRES_PORT=5432
     command: ["python", "-m", "app.consumer.consumer"]
     ports:
       - "8000:8000"
@@ -133,6 +137,7 @@ services:
 
   prometheus:
     image: prom/prometheus:latest
+    container_name: prometheus
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
@@ -143,6 +148,7 @@ services:
 
   grafana:
     image: grafana/grafana:latest
+    container_name: grafana
     ports:
       - "3000:3000"
     volumes:
