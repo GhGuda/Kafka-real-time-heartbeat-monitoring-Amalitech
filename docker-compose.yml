@@ -76,7 +76,7 @@ services:
       kafka:
         condition: service_healthy
     environment:
-      - KAFKA_BROKER=kafka:9092
+      - KAFKA_BROKER=${KAFKA_BROKER}
     command: ["python", "-m", "app.producer.producer"]
 
 
@@ -85,9 +85,9 @@ services:
     image: postgres:15
     container_name: kafka-postgres
     environment:
-      POSTGRES_USER: heartbeat_user
-      POSTGRES_PASSWORD: heartbeat_pass
-      POSTGRES_DB: heartbeat_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
     volumes:
@@ -105,8 +105,8 @@ services:
     depends_on:
       - postgres
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     ports:
       - "5050:80"
 
@@ -119,12 +119,12 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      - KAFKA_BROKER=kafka:9092
-      - POSTGRES_HOST=postgres
-      - POSTGRES_DB=heartbeat_db
-      - POSTGRES_USER=heartbeat_user
-      - POSTGRES_PASSWORD=heartbeat_pass
-      - POSTGRES_PORT=5432
+      - KAFKA_BROKER=${KAFKA_BROKER}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_PORT=${POSTGRES_PORT}
     command: ["python", "-m", "app.consumer.consumer"]
     ports:
       - "8000:8000"
